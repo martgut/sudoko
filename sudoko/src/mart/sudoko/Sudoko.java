@@ -7,22 +7,33 @@ public class Sudoko {
 	private int fVariants[];
 	private int fRows;
 	private int fCols;
+	private int fSuds;
 	
 	private boolean fRowValueUsed[][];
 	private boolean fColValueUsed[][];
+	private boolean fSudValueUsed[][];
 	
 	public Sudoko() {
-		fRows = 4;
-		fCols = 4;
+		fRows = 9;
+		fCols = 9;
 
-		fMaxValue = 4;
+		fMaxValue = 9;
 		fMaxLevel = fRows * fCols;
+		fSuds = 9; 
 
 		fVariants = new int[fMaxLevel];
 		fRowValueUsed = new boolean[fRows][fMaxValue+1];
 		fColValueUsed = new boolean[fCols][fMaxValue+1];
+		fSudValueUsed = new boolean[fSuds][fMaxValue+1];
 	}
 
+	public void init()
+	{
+		for (int i=0; i< (fRows * fCols); i++)
+		{
+			System.out.println("l=" + i + " s=" + getSud(i));
+		}
+	}
 	// Print current processed variant
 	public void printVariant()
 	{
@@ -57,7 +68,7 @@ public class Sudoko {
 				System.out.println();
 			}
 		}
-	System.out.println();			
+		System.out.println();			
 	}
 
 	// Check whether this value is ==allowed
@@ -65,14 +76,12 @@ public class Sudoko {
 	{
 		int row = getRow(level);
 		int col = getCol(level);
+		int sud = getSud(level);
 		
-		// boolean used = !fRowValueUsed[row][value] && !fColValueUsed[col][value];
 		// If one, or both values are true, they are used!
-		boolean used = fRowValueUsed[row][value] || fColValueUsed[col][value];
-
-		// prettyPrintVariant(true);
-		// System.out.println("checkValue() level=" + level + " value=" + value + " used = " + used);
-
+		boolean used = fRowValueUsed[row][value] || 
+					fColValueUsed[col][value] || 
+					fSudValueUsed[sud][value];
 		return !used;
 	}	
 	
@@ -80,15 +89,18 @@ public class Sudoko {
 	{
 		int row = getRow(level);
 		int col = getCol(level);
+		int sud = getSud(level);
 
 		// Reset usage of old value
 		int old = fVariants[level];
 		fRowValueUsed[row][old] = false;
 		fColValueUsed[col][old] = false;
+		fSudValueUsed[sud][old] = false;
 
 		// Mark these values as used
 		fRowValueUsed[row][value] = true;
 		fColValueUsed[col][value] = true;
+		fSudValueUsed[sud][value] = true;
 		fVariants[level] = value;	
 	}
 	
@@ -102,6 +114,18 @@ public class Sudoko {
 	{
 		int col = level % fRows;
 		return col;
+	}
+	
+	int getSud(int level)
+	{
+		int row, col, sud;
+		row = getRow(level);
+		col = getCol(level);
+		
+		int j = (int)Math.sqrt(fSuds);
+		
+		sud = col / j + row / j * j;
+		return sud;
 	}
 
 	// Iterate over all variants
@@ -118,7 +142,7 @@ public class Sudoko {
 			found = false;
 			for (int value=fVariants[level]+1; value<=fMaxValue && !found; value++)
 			{
-				// Need to check whether this value is fRowValueUsed[row][value]allowed
+				// Need to check whether this value is allowed
 				if (checkValue(level, value))
 				{
 					// Great, we found a valid value on this level
@@ -159,7 +183,7 @@ public class Sudoko {
 		System.out.println("Hello Sudoko");
 		
 		Sudoko sudoko = new Sudoko();
+		sudoko.init();
 		sudoko.iterateVariants();
-
 	}
 }
